@@ -38,7 +38,7 @@ with torch.no_grad():
   model.eval().to(device)
   worderrorrate = []
   for point in tqdm(range(len(df_dev))):
-    acoustic, _ = librosa.load("../EN_MDD/WAV/" + df_dev['Path'][point] + ".wav", sr=16000)
+    acoustic, _ = librosa.load("/kaggle/input/datasets/davidthomastran/en-mdd/EN_MDD/WAV/" + df_dev['Path'][point] + ".wav", sr=16000)
     acoustic = feature_extractor(acoustic, sampling_rate = 16000)
     acoustic = torch.tensor(acoustic.input_values, device=device)
     transcript = df_dev['Transcript'][point]

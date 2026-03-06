@@ -1,0 +1,3 @@
+[submodule "MDD-Metric"]
+	path = MDD-Metric
+	url = https://github.com/nhlam04/MDD-Metric.git
