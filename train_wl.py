@@ -99,6 +99,7 @@ for epoch in range(num_epoch):
     logits = F.log_softmax(logits, dim=2)
     loss_ctc = ctc_loss(logits, labels, input_lengths, target_lengths)
     loss = loss_ctc
+    print(f"Loss: {loss}")
     running_loss.append(loss.item())
     loss.backward()
     optimizer.step()
