@@ -33,7 +33,7 @@ class MDD_Dataset(Dataset):
         self.canonical_time = list(data['Canonical_time'])
 
     def __getitem__(self, index):
-        waveform, _ = librosa.load("../EN_MDD/WAV/" + self.path[index] + ".wav", sr=16000)
+        waveform, _ = librosa.load("/kaggle/input/datasets/davidthomastran/en-mdd/EN_MDD/WAV/" + self.path[index] + ".wav", sr=16000)
         linguistic  = text_to_tensor(self.canonical[index])
         transcript  = text_to_tensor(self.transcript[index])
         error = self.error[index]
