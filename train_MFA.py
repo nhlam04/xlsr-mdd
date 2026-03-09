@@ -78,8 +78,9 @@ def collate_fn(batch):
     
     return input_values, cols['linguistic'], cols['transcript'], cols['error'], cols['outputlengths'], cols['canonical_time']
   
-df_train = pd.read_csv('./train_time.csv')
-df_dev = pd.read_csv("./dev_time.csv")
+LABEL_ROOT = os.environ.get('LABEL_ROOT', './')
+df_train = pd.read_csv(LABEL_ROOT + 'train_time.csv')
+df_dev = pd.read_csv(LABEL_ROOT + 'dev_time.csv')
 train_dataset = MDD_Dataset(df_train)
 train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True, collate_fn=collate_fn)
 model = MFA_Wav2Vec2_Linguistic.from_pretrained(

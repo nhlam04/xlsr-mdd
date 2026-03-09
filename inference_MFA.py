@@ -20,7 +20,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 num_epoch = 100
 gc.collect()
 #at least work with 4.38.2
-df_dev = pd.read_csv("./test_time.csv")
+LABEL_ROOT = os.environ.get('LABEL_ROOT', './')
+df_dev = pd.read_csv(LABEL_ROOT + 'test_time.csv')
 model = MFA_Wav2Vec2_Linguistic.from_pretrained(
     'facebook/wav2vec2-base-100h', 
 )

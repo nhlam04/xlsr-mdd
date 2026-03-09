@@ -22,8 +22,9 @@ num_epoch = 100
 
 gc.collect()
 
-df_train = pd.read_csv('./train_time.csv')
-df_dev = pd.read_csv("./dev.csv")
+LABEL_ROOT = os.environ.get('LABEL_ROOT', './')
+df_train = pd.read_csv(LABEL_ROOT + 'train_time.csv')
+df_dev = pd.read_csv(LABEL_ROOT + 'dev.csv')
 train_dataset = MDD_Dataset(df_train)
 
 batch_size = 4

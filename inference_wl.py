@@ -19,7 +19,8 @@ num_epoch = 100
 
 gc.collect()
 
-df_dev = pd.read_csv("./test.csv")
+LABEL_ROOT = os.environ.get('LABEL_ROOT', './')
+df_dev = pd.read_csv(LABEL_ROOT + 'test.csv')
 
 model = Wav2Vec2_Linguistic.from_pretrained(
     'facebook/wav2vec2-base-100h', 
