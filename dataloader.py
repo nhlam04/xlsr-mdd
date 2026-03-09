@@ -36,7 +36,11 @@ class MDD_Dataset(Dataset):
         self.canonical_time = list(data['Canonical_time'])
 
     def __getitem__(self, index):
-        waveform, _ = librosa.load(WAV_ROOT + self.path[index], sr=16000)
+        path = WAV_ROOT + self.path[index]
+        try:
+            waveform, _ = librosa.load(path, sr=16000)
+        except Exception as e:
+            raise RuntimeError(f"[dataloader] Failed to load: {path}") from e
         linguistic  = text_to_tensor(self.canonical[index])
         transcript  = text_to_tensor(self.transcript[index])
         error = self.error[index]
@@ -70,7 +74,10 @@ def collate_fn(batch):
 
         cols = {'waveform':[], 'linguistic':[], 'transcript':[], 'error':[], 'outputlengths':[]}
         
+        acoustic_frames = max_col[0] // 320  # wav2vec2 downsamples by 320
         for row in batch:
+            if len(row[2]) > acoustic_frames:
+                print(f"[dataloader] WARNING: transcript length ({len(row[2])}) > acoustic frames ({acoustic_frames}) — batch này sẽ gây CTC NaN")
             pad_wav = np.concatenate([row[0], np.zeros(max_col[0] - row[0].shape[0])])
             cols['waveform'].append(pad_wav)
             row[1].extend([68] * (max_col[1] - len(row[1])))
