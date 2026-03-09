@@ -1,6 +1,9 @@
 
 from transformers import Wav2Vec2FeatureExtractor
 import torch, json, os, librosa, transformers, gc
+
+WAV_ROOT = os.environ.get('WAV_ROOT', './')
+
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
@@ -112,7 +115,7 @@ for epoch in range(num_epoch):
       model.eval().to(device)
       worderrorrate = []
       for point in tqdm(range(len(df_dev))):
-        acoustic, _ = librosa.load("/kaggle/input/datasets/davidthomastran/en-mdd/EN_MDD/WAV/" + df_dev['Path'][point] + ".wav", sr=16000)
+        acoustic, _ = librosa.load(WAV_ROOT + df_dev['Path'][point], sr=16000)
         acoustic = feature_extractor(acoustic, sampling_rate = 16000)
         acoustic = torch.tensor(acoustic.input_values, device=device)
         transcript = df_dev['Transcript'][point]

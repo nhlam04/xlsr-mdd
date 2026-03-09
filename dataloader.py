@@ -1,3 +1,4 @@
+import os
 import torch
 from torch.utils.data import Dataset
 import numpy as np
@@ -6,6 +7,8 @@ import librosa
 import ast
 from transformers import Wav2Vec2FeatureExtractor
 import json
+
+WAV_ROOT = os.environ.get('WAV_ROOT', './')
 
 with open('vocab.json') as f:
     dict_vocab = json.load(f)
@@ -33,7 +36,7 @@ class MDD_Dataset(Dataset):
         self.canonical_time = list(data['Canonical_time'])
 
     def __getitem__(self, index):
-        waveform, _ = librosa.load("/kaggle/input/datasets/davidthomastran/en-mdd/EN_MDD/WAV/" + self.path[index] + ".wav", sr=16000)
+        waveform, _ = librosa.load(WAV_ROOT + self.path[index], sr=16000)
         linguistic  = text_to_tensor(self.canonical[index])
         transcript  = text_to_tensor(self.transcript[index])
         error = self.error[index]
