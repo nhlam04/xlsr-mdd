@@ -86,7 +86,12 @@ decoder_ctc = build_ctcdecoder(
                               labels = list_vocab,
                               )
 
-optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)
+optimizer = torch.optim.AdamW([
+    {'params': model.wav2vec2.parameters(), 'lr': 1e-5},
+    {'params': model.classifier_vocab.parameters(), 'lr': 1e-3},
+    {'params': model.multihead_attention.parameters(), 'lr': 1e-3},
+    {'params': model.linguistic_encoder.parameters(), 'lr': 1e-3},
+], lr=1e-3)
 
 ctc_loss = nn.CTCLoss(blank=68, zero_infinity=True)
 for epoch in range(num_epoch):
