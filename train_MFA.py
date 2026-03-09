@@ -95,7 +95,7 @@ decoder_ctc = build_ctcdecoder(
                               )
 
 optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)
-ctc_loss = nn.CTCLoss(blank = 68)
+ctc_loss = nn.CTCLoss(blank=68, zero_infinity=True)
 
 for epoch in range(num_epoch):
   model.train().to(device)
@@ -108,7 +108,7 @@ for epoch in range(num_epoch):
     logits= model(acoustic, linguistic)
     logits = logits.transpose(0,1)
     input_lengths = torch.full(size=(logits.shape[1],), fill_value=logits.shape[0], dtype=torch.long, device=device)
-    logits = F.log_softmax(logits, dim=2)
+    logits = F.log_softmax(logits, dim=2).clamp(min=-100)
     loss_ctc = ctc_loss(logits, labels, input_lengths, target_lengths)
     loss = loss_ctc
     running_loss.append(loss.item())

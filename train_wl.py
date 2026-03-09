@@ -88,7 +88,7 @@ decoder_ctc = build_ctcdecoder(
 
 optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)
 
-ctc_loss = nn.CTCLoss(blank = 68)
+ctc_loss = nn.CTCLoss(blank=68, zero_infinity=True)
 for epoch in range(num_epoch):
   model.train().to(device)
   running_loss = []
@@ -104,13 +104,9 @@ for epoch in range(num_epoch):
       print(f"[train] SKIP batch {i}: input_length={input_lengths.min().item()} < target_length={target_lengths.max().item()} (CTC constraint violated)")
       optimizer.zero_grad()
       continue
-    logits = F.log_softmax(logits, dim=2)
+    logits = F.log_softmax(logits, dim=2).clamp(min=-100)
     loss_ctc = ctc_loss(logits, labels, input_lengths, target_lengths)
     loss = loss_ctc
-    if torch.isnan(loss):
-      print(f"[train] NaN loss at batch {i}: input_lengths={input_lengths.tolist()}, target_lengths={target_lengths.tolist()}")
-      optimizer.zero_grad()
-      continue
     running_loss.append(loss.item())
     loss.backward()
     nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
