@@ -100,12 +100,20 @@ for epoch in range(num_epoch):
     logits= model(acoustic, linguistic)
     logits = logits.transpose(0,1)
     input_lengths = torch.full(size=(logits.shape[1],), fill_value=logits.shape[0], dtype=torch.long, device=device)
+    if input_lengths.min() < target_lengths.max():
+      print(f"[train] SKIP batch {i}: input_length={input_lengths.min().item()} < target_length={target_lengths.max().item()} (CTC constraint violated)")
+      optimizer.zero_grad()
+      continue
     logits = F.log_softmax(logits, dim=2)
     loss_ctc = ctc_loss(logits, labels, input_lengths, target_lengths)
     loss = loss_ctc
-    print(f"Loss: {loss}")
+    if torch.isnan(loss):
+      print(f"[train] NaN loss at batch {i}: input_lengths={input_lengths.tolist()}, target_lengths={target_lengths.tolist()}")
+      optimizer.zero_grad()
+      continue
     running_loss.append(loss.item())
     loss.backward()
+    nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
     optimizer.step()
     optimizer.zero_grad()
     # break
