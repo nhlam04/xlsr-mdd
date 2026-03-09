@@ -58,22 +58,26 @@ for epoch in range(num_epoch):
     logits, error_classifier = model(acoustic, linguistic)
     logits = logits.transpose(0,1)
     input_lengths = torch.full(size=(logits.shape[1],), fill_value=logits.shape[0], dtype=torch.long, device=device)
-    logits = F.log_softmax(logits, dim=2).clamp(min=-100)
-    error_classifier    = F.log_softmax(error_classifier, dim = 2)
+    logits = torch.nan_to_num(F.log_softmax(logits, dim=2), nan=-100.0, posinf=0.0, neginf=-100.0)
+    error_classifier    = torch.nan_to_num(F.log_softmax(error_classifier, dim = 2), nan=-100.0, posinf=0.0, neginf=-100.0)
 
     loss_nll = nll_loss(error_classifier.reshape(-1, 2), error_gt.reshape(-1))
     loss_ctc = ctc_loss(logits, labels, input_lengths, target_lengths)
     loss = 0.5*loss_nll + 0.5*loss_ctc
+    if torch.isnan(loss):
+      optimizer.zero_grad()
+      continue
     if i%500==0:
       print(loss)
     running_loss.append(loss.item())
 
     loss.backward()
+    nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
     optimizer.step()
     optimizer.zero_grad()
     # break
 
-  print(f"Training loss: {sum(running_loss) / len(running_loss)}")
+  print(f"Training loss: {sum(running_loss) / len(running_loss) if running_loss else float('nan')}")
   #after 5-7 epoch, model converge
   if epoch>=7:
     with torch.no_grad():

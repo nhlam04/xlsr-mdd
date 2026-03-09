@@ -104,9 +104,12 @@ for epoch in range(num_epoch):
       print(f"[train] SKIP batch {i}: input_length={input_lengths.min().item()} < target_length={target_lengths.max().item()} (CTC constraint violated)")
       optimizer.zero_grad()
       continue
-    logits = F.log_softmax(logits, dim=2).clamp(min=-100)
+    logits = torch.nan_to_num(F.log_softmax(logits, dim=2), nan=-100.0, posinf=0.0, neginf=-100.0)
     loss_ctc = ctc_loss(logits, labels, input_lengths, target_lengths)
     loss = loss_ctc
+    if torch.isnan(loss):
+      optimizer.zero_grad()
+      continue
     running_loss.append(loss.item())
     loss.backward()
     nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
@@ -114,7 +117,7 @@ for epoch in range(num_epoch):
     optimizer.zero_grad()
     # break
   # scheduler.step()
-  print(f"Training loss: {sum(running_loss) / len(running_loss)}")
+  print(f"Training loss: {sum(running_loss) / len(running_loss) if running_loss else float('nan')}")
   if epoch>=5:
     with torch.no_grad():
       model.eval().to(device)
